@@ -1,22 +1,23 @@
 from flask import Flask, render_template_string
-import subprocess
+import requests
+import time
 
 app = Flask(__name__)
 
 def check_network():
     try:
-        response = subprocess.run(["ping", "-c", "1", "8.8.8.8"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return "Online" if response.returncode == 0 else "Offline"
+        response = requests.get("https://www.google.com", timeout=3)
+        return "Online" if response.status_code == 200 else "Offline"
     except:
-        return "Error"
+        return "Offline"
 
-def check_latency(host="8.8.8.8"):
+def check_latency():
     try:
-        response = subprocess.run(["ping", "-c", "1", host], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        for line in response.stdout.splitlines():
-            if "time=" in line:
-                return line.split("time=")[1].split()[0] + " ms"
-        return "N/A"
+        start = time.time()
+        requests.get("https://www.google.com", timeout=3)
+        end = time.time()
+        latency_ms = round((end - start) * 1000, 2)
+        return f"{latency_ms} ms"
     except:
         return "N/A"
 
